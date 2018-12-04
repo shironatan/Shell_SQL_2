@@ -11,14 +11,13 @@ File(){
 	fi
 }
 
-#ユーザー変更
+#ユーザー新規作成・変更
 Change(){
         local file=".my.cnf"
 	local username
 	local password
 	local hostname
-
-	echo "ユーザーを変更"
+	echo "ユーザーを新規作成・変更"
 	read -p "ユーザー名 : " username </dev/tty
 	read -s -p "パスワード : " password </dev/tty
 	echo
@@ -29,7 +28,7 @@ Change(){
 		echo "password = $password";
 		echo "host = $hostname";
 	} > $file
-	echo "変更完了"
+	echo "新規作成・変更完了"
 }
 
 #ログインユーザー選ぶ

@@ -115,50 +115,26 @@ Show_array(){
 		echo "*** ${e}"
 	done
 }
-#更新条件情報を配列に格納(引数:データベース名,テーブル名)
+#削除条件情報を配列に格納(引数:データベース名,テーブル名)
 Target_inf(){	
 	echo "/* WHERE内容作成 */"
-	local update_colum
-	local update_data
-	read -p "更新条件項目名[exit:q] : " update_colum
+	local delete_colum
+	local delete_data
+	read -p "削除条件項目名[exit:q] : " delete_colum
 	#qの場合終了
-	while [ "$update_colum" != "q" ]
+	while [ "$delete_colum" != "q" ]
 	do
-		Check_colum $1 $2 $update_colum
-		read -p "更新条件項目内容 : " update_data
-		#更新条件項目名と内容を配列に追加
-		ARRAY4+=("$update_colum")
-	       	ARRAY4+=("$update_data")
-		read -p "更新条件項目名[exit:q] : " update_colum
+		Check_colum $1 $2 $delete_colum
+		read -p "削除条件項目内容 : " delete_data
+		#削除条件項目名と内容を配列に追加
+		ARRAY4+=("$delete_colum")
+	       	ARRAY4+=("$delete_data")
+		read -p "削除条件項目名[exit:q] : " delete_colum
 	done
 	#ARRAY4が空の場合終了
 	if [ ${#ARRAY4[@]} -eq 0 ]
 	then
-		echo "全項目内容を更新します"
-	fi
-}
-#更新情報を配列に格納(引数:データベース名,テーブル名)
-Update_inf(){	
-	echo "/* SET内容作成 */"
-	local update_colum
-	local update_data
-	read -p "更新項目名[exit:q] : " update_colum
-	#qの場合終了
-	while [ "$update_colum" != "q" ]
-	do
-		Check_colum $1 $2 $update_colum
-		read -p "更新内容 : " update_data
-		#更新項目名と内容を配列に追加
-		ARRAY3+=("$update_colum")
-	       	ARRAY3+=("$update_data")
-		read -p "更新項目名[exit:q] : " update_colum
-	done
-	#ARRAY3が空の場合終了
-	if [ ${#ARRAY3[@]} -eq 0 ]
-	then
-		echo "更新項目１つ以上は必要です"
-		echo "最初からやり直してください"
-		exit 1
+		echo "全項目内容を削除します"
 	fi
 }
 #存在する項目名かチェック(引数:データベース名,テーブル名,項目名)
@@ -172,37 +148,20 @@ Check_colum(){
                 exit 1
         fi
 }
-#更新対象情報を入力（引数：データベース名,テーブル名,SQLFILE名）
+#削除対象情報を入力（引数：データベース名,テーブル名,SQLFILE名）
 Create_sql(){
 	local e
 	local targ_sql
 	local data_sql
 	local i=0
-	#SET組み立て
-	for e in "${ARRAY3[@]}"
-	do
-		if [ $i -eq 0 ]
-		then
-			targ_sql=" SET ${ARRAY3[i]} = \"${ARRAY3[i+1]}\""
-		else
-			targ_sql="$targ_sql,${ARRAY3[i]} = \"${ARRAY3[i+1]}\""
-		fi
-		i=`expr $i + 2 `
-		#配列要素最大か
-		if [ $i -eq ${#ARRAY3[@]} ]
-		then
-			break
-		fi
-	done
-	i=0
 	#WHERE
 	for e in "${ARRAY4[@]}"
 	do
 		if [ $i -eq 0 ]
 		then
-			data_sql=" WHERE ${ARRAY4[i]} = \"${ARRAY4[i+1]}\""
+			targ_sql=" WHERE ${ARRAY4[i]} = \"${ARRAY4[i+1]}\""
 		else
-			data_sql="$data_sql AND ${ARRAY4[i]} = \"${ARRAY4[i+1]}\""
+			targ_sql="$targ_sql AND ${ARRAY4[i]} = \"${ARRAY4[i+1]}\""
 		fi
 		i=`expr $i + 2 `
 		#配列要素最大か
@@ -212,12 +171,12 @@ Create_sql(){
 		fi
 	done
 	{ echo "use $1;"
-		echo "UPDATE $2$targ_sql$data_sql;"
+		echo "DELETE FROM $2$targ_sql;"
 	} >> $3
 }
 
 
-echo "SQLファイルを新規作成(UPDATE)"
+echo "SQLファイルを新規作成(DELETE)"
 read -p "ファイル名を入力 : " SQLFILE </dev/tty
 File $SQLFILE
 Account
@@ -228,7 +187,6 @@ Show_Table $Show_DB
 read -p "テーブル名を入力 : " Show_Table </dev/tty
 Show_TableData $Show_DB $Show_Table
 Target_inf $Show_DB $Show_Table
-Update_inf $Show_DB $Show_Table
 Create_sql $Show_DB $Show_Table $SQLFILE
 echo "-------------------"
 echo "ファイル名：$SQLFILE"
