@@ -57,13 +57,13 @@ Create_File(){
 	fi
 }
 echo "CSVファイルを新規作成します"
-read -p "列数を指定 : " retu
-Int $retu
 read -p "行数を指定 : " gyo
 Int $gyo
+read -p "列数を指定 : " retu
+Int $retu
 Create_File
 echo "$retu列$gyo行の$FILEを作成します"
-CSV $retu $gyo
+CSV $gyo $retu
 echo "----------------------"
 echo "ファイル名：$FILE"
 cat $FILE
