@@ -62,7 +62,7 @@ Int $gyo
 read -p "列数を指定 : " retu
 Int $retu
 Create_File
-echo "$retu列$gyo行の$FILEを作成します"
+echo "$gyo行$retuの$FILEを作成します"
 CSV $gyo $retu
 echo "----------------------"
 echo "ファイル名：$FILE"
