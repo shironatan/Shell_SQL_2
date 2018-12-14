@@ -5,7 +5,7 @@ File(){
 	SQLFILE="$1.sql"
 	if [ -f $SQLFILE ];
        	then
-		echo "$SQLFILEに追記していきます"
+		echo "$SQLFILEに上書きしていきます"
 	else
 		echo "$SQLFILEを新規作成"
 	fi
@@ -105,7 +105,6 @@ Show_Table(){
 	unset ARRAY[0]
 	Show_array
 }
-
 #存在するテーブル名かチェック(引数:データベース名,テーブル名)
 Check_table(){
 	local ret
@@ -184,7 +183,6 @@ JOIN_table(){
 		read -p "結合テーブルを入力[終了:q]：" table </dev/tty
 		echo
 	done
-
 	if [ ${#TABLE[@]} -eq 1 ]
 	then
 		echo "結合テーブル１つ以上は必要です"

@@ -5,7 +5,7 @@ File(){
 	SQLFILE="$1.sql"
 	if [ -f $SQLFILE ];
        	then
-		echo "$SQLFILEに追記していきます"
+		echo "$SQLFILEに上書きしていきます"
 	else
 		echo "$SQLFILEを新規作成"
 	fi
@@ -350,11 +350,11 @@ SQL_1(){
 		else
 			if [ "${SHOW_COLUM[i+1]}" == "q" ]
 			then
-				SELECT="$SELECT,${SHOW_COLUM[i]}"
-				GROUP="$GROUP,${SHOW_COLUM[i]}"
+				SELECT="$SELECT, ${SHOW_COLUM[i]}"
+				GROUP="$GROUP, ${SHOW_COLUM[i]}"
 			else
-				SELECT="$SELECT,${SHOW_COLUM[i]} AS ${SHOW_COLUM[i+1]}"
-				GROUP="$GROUP,${SHOW_COLUM[i+1]}"
+				SELECT="$SELECT, ${SHOW_COLUM[i]} AS ${SHOW_COLUM[i+1]}"
+				GROUP="$GROUP, ${SHOW_COLUM[i+1]}"
 			fi
 		fi
 		i=$(( $i + 2 ))

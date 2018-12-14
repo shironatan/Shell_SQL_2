@@ -3,7 +3,7 @@
 #ファイルが存在するか
 File(){
 	SQLFILE="$1.sql"
-	if [ -f $SQLFILE ];
+	if [ -f $SQLFILE ]
        	then
 		echo "$SQLFILEに追記していきます"
 	else
@@ -35,14 +35,14 @@ Change(){
 Account(){
 	local file=".my.cnf"
 	local login_user
-	if [ ! -e $file ];
+	if [ ! -e $file ]
 	then
 		Change
 	fi
 	echo "/* ログインユーザー */"
 	cat $file | grep 'user = ' | awk '{print $3}'
 	read -p"ユーザー名を指定[変更:change] : " login_user </dev/tty
-	if [ "$login_user" = "change" ];
+	if [ "$login_user" = "change" ]
 	then
 		Change
 		Account
@@ -57,7 +57,7 @@ Connect(){
 	local file=".my.cnf"
 	local ret
 	ret=`mysql --defaults-extra-file=./$file -u $USER -e"select user();"`
-	if [ $? -eq 1 ];
+	if [ $? -eq 1 ]
 	then
                 echo "MYSQLに接続できませんでした。"
                 exit 1
@@ -73,7 +73,7 @@ Show_DB(){
 	local file=".my.cnf"
 	local ret
 	ret=`mysql --defaults-extra-file=./$file -u $USER -e "show databases;"`
-	if [ $? -gt 0 ];
+	if [ $? -gt 0 ]
 	then
 		exit 0
 	fi
@@ -86,7 +86,7 @@ Show_Table(){
 	local file=".my.cnf"
 	local ret
 	ret=`mysql --defaults-extra-file=./$file -u $USER -e "use $1;show tables;"`
-	if [ $? -gt 0 ];
+	if [ $? -gt 0 ]
        	then
 		echo "存在しないデータベース名です"
 		echo "最初からやり直してください"
@@ -102,7 +102,7 @@ Show_TableInf(){
 	local file=".my.cnf"
 	local ret
 	ret=`mysql --defaults-extra-file=./$file -u $USER -e "use $1;SHOW COLUMNS FROM $2"`
-	if [ $? -gt 0 ];
+	if [ $? -gt 0 ]
 	then
 		echo "存在しないテーブル名です"
 		echo "最初からやり直してください"
@@ -206,7 +206,7 @@ Create_sql(){
 			colum_sql="$colum_sql,${ARRAY3[i]}"
 			data_sql="$data_sql,'${ARRAY3[i+1]}'"
 		fi
-		i=`expr $i + 2 `
+		i=$(( $i + 2 ))
 		#配列要素最大か
 		if [ $i -eq ${#ARRAY3[@]} ]
 		then
