@@ -35,14 +35,14 @@ Change(){
 Account(){
 	local file=".my.cnf"
 	local login_user
-	if [ ! -e $file ]
+	if [ ! -e $file ];
 	then
 		Change
 	fi
 	echo "/* ログインユーザー */"
 	cat $file | grep 'user = ' | awk '{print $3}'
 	read -p"ユーザー名を指定[変更:change] : " login_user </dev/tty
-	if [ "$login_user" = "change" ]
+	if [ "$login_user" = "change" ];
 	then
 		Change
 		Account
@@ -73,7 +73,7 @@ Show_DB(){
 	local file=".my.cnf"
 	local ret
 	ret=`mysql --defaults-extra-file=./$file -u $USER -e "show databases;"`
-	if [ $? -gt 0 ]
+	if [ $? -gt 0 ];
 	then
 		exit 0
 	fi
@@ -87,8 +87,8 @@ Show_Table(){
 	local file=".my.cnf"
 	local ret
 	ret=`mysql --defaults-extra-file=./$file -u $USER -e "use $1;show tables;"`
-	if [ $? -gt 0 ];
-       	then
+	if [ $? -gt 0 ]
+	then
 		echo "存在しないデータベース名です"
 		echo "最初からやり直してください"
 		exit 1
@@ -112,7 +112,7 @@ Check_table(){
 	local file=".my.cnf"
 	ret=`mysql --defaults-extra-file=./$file -u $USER -e "use $1;select * FROM $2;"`
         if [ $? -gt 0 ]
-       	then
+	then
                 echo "存在しないテーブル名です"
                 echo "最初からやり直してください"
                 exit 1
@@ -164,19 +164,14 @@ Show_array2(){
 	done
 	echo $data
 }
-#ファクトテーブル結合関数(引数:DB名)
-Fact_JOIN(){
+#テーブル結合関数(引数：DB名）
+JOIN_table(){
 	local table
 	Show_Table $1
 	read -p "メインテーブルを入力：" table </dev/tty
 	Check_table $1 $table
 	Targ_Colum $1 $table
 	TABLE+=($table)
-	echo
-}
-#ディメンションテーブル結合関数(引数：DBを名）
-Dimantion_JOIN(){
-	local table
 	Show_Table $1
 	read -p "結合テーブルを入力[終了：q]：" table </dev/tty
 	while [ "$table" != "q" ]
@@ -199,7 +194,8 @@ Dimantion_JOIN(){
 }
 #結合項目関数(引数：データベース名、結合テーブル名）
 Join_Colum(){
-	local F="${TABLE[0]}"
+	local i=$(( ${#TABLE[@]} - 1 ))
+	local F="${TABLE[i]}"
 	local D="$2"
 	local colum
 	Show_TableInf $1 $F
@@ -226,174 +222,28 @@ Targ_Colum(){
 		read -p "$2テーブル結合条件項目名[無し/終了:q]：" colum
 	done
 }
-#抽出項目を決める(引数：データーベース名)
-FACT_COLUM(){
-	local table
-	local colum
-	local cname
-	table="${TABLE[0]}"
-	Show_TableInf $1 $table
-	echo "集合関数は直接入力"
-	read -p "$tableテーブル抽出項目名[終了:q]：" colum
-	#テーブル内の表示項目を決める
-	while [ "$colum" != "q" ]
-	do
-		#集合関数分別
-		if [ "`echo $colum | grep "("`" == "$colum" ]
-		then
-			AGG_COLUM+=($colum)
-			read -p "$colum項目の表示名[項目名と同一:q]：" cname
-			AGG_COLUM+=($cname)
-		else
-			Check_colum $1 $table $colum
-			SHOW_COLUM+=($colum)
-			read -p "$colum項目の表示名[項目名と同一:q]：" cname
-			SHOW_COLUM+=($cname)
-		fi
-		read -p "$tableテーブル抽出項目名[終了:q]：" colum
-	done
-	#抽出項目判定
-	if [ ${#SHOW_COLUM[@]} -eq 0 ] && [ ${#AGG_COLUM[@]} -eq 0 ]
-	then
-		echo "抽出項目は一つ以上必要です"
-		echo "最初からやり直してください"
-		exit 1
-	fi
-}
-
-#抽出項目を決める(引数：データーベース名)
-DIMANTION_COLUM(){
-	local table
-	local colum
-	local cname
-	local i=1
-	local e
-	for e in "${TABLE[@]}"
-	do
-		table="${TABLE[i]}"
-		Show_TableInf $1 $table
-		read -p "$tableテーブル抽出項目名[終了:q]：" colum
-		#テーブル内の表示項目を決める
-		while [ "$colum" != "q" ]
-		do
-			Check_colum $1 $table $colum
-			SHOW_COLUM+=("$table.$colum")
-			read -p "$colum項目の表示名[項目名と同一:q]：" cname
-			SHOW_COLUM+=($cname)
-			read -p "$tableテーブル抽出項目名[終了:q]：" colum
-		done
-		let i++
-		if [ $i -eq ${#TABLE[@]} ]
-		then
-			break
-		fi
-	done
-}
 #SQLをつくる(引数：データベース名）
 Create_sql(){
 	FROM="FROM ${TABLE[0]}"
-	SQL_1
 	SQL_2
 	SQL_3
-	#条件と抽出項目がない場合
-	if [ 0 -eq ${#TARG_COLUM[@]} ] && [ 0 -eq ${#SHOW_COLUM[@]} ]
+	if [ 0 -eq ${#TARG_COLUM[@]} ] #条件がない場合
 	then
 		{ echo "use $1;"
-			echo "$SELECT"
+			echo "SELECT *"
 			echo "$FROM"
 			echo -e "$JOIN;"
 		} > $SQLFILE
-	elif [ 0 -eq ${#TARG_COLUM[@]} ] #条件がない場合
-	then
+	else
 		{ echo "use $1;"
-			echo "$SELECT"
-			echo "$FROM"
-			echo -e "$JOIN"
-			echo "$GROUP;"
-		} > $SQLFILE
-	elif [ 0 -eq ${#SHOW_COLUM[@]} ] #抽出項目がない場合
-	then
-		{ echo "use $1;"
-			echo "$SELECT"
+			echo "SELECT *"
 			echo "$FROM"
 			echo -e "$JOIN"
 			echo "$WHERE;"
 		} > $SQLFILE
-	else
-		{ echo "use $1;"
-			echo "$SELECT"
-			echo "$FROM"
-			echo -e "$JOIN"
-			echo "$WHERE"
-			echo "$GROUP;"
-		} > $SQLFILE
 	fi
 }
-#selectとgroupをつくる
-SQL_1(){
-	SELECT="SELECT"
-	#抽出項目
-	local e
-	local i=0
-	for e in "${SHOW_COLUM[@]}"
-	do
-		if [ $i -eq 0 ]
-		then
-			if [ "${SHOW_COLUM[i+1]}" == "q" ]
-			then
-				SELECT="SELECT ${SHOW_COLUM[i]}"
-				GROUP="GROUP BY ${SHOW_COLUM[i]}"
-			else
-				SELECT="SELECT ${SHOW_COLUM[i]} AS ${SHOW_COLUM[i+1]}"
-				GROUP="GROUP BY ${SHOW_COLUM[i+1]}"
-			fi
-		else
-			if [ "${SHOW_COLUM[i+1]}" == "q" ]
-			then
-				SELECT="$SELECT,${SHOW_COLUM[i]}"
-				GROUP="$GROUP,${SHOW_COLUM[i]}"
-			else
-				SELECT="$SELECT,${SHOW_COLUM[i]} AS ${SHOW_COLUM[i+1]}"
-				GROUP="$GROUP,${SHOW_COLUM[i+1]}"
-			fi
-		fi
-		i=$(( $i + 2 ))
-		#要素数最大
-		if [ $i -eq ${#SHOW_COLUM[@]} ]
-		then
-			break
-		fi
-	done
-	#集合関数項目
-	i=0
-	for e in "${AGG_COLUM[@]}"
-	do
-		#集合関数項目のみの場合
-		if [ 0 -eq ${#SHOW_COLUM[@]} ] && [ $i -eq 0 ]
-		then
-			if [ "${AGG_COLUM[i+1]}" == "q" ]
-			then
-				SELECT="SELECT ${AGG_COLUM[i]}"
-			else
-				SELECT="SELECT ${AGG_COLUM[i]} AS ${AGG_COLUM[i+1]}"
-			fi
-		else
-			if [ "${AGG_COLUM[i+1]}" == "q" ]
-			then
-				SELECT="$SELECT, ${AGG_COLUM[i]}"
-			else
-				SELECT="$SELECT, ${AGG_COLUM[i]} AS ${AGG_COLUM[i+1]}"
-			fi
-		fi
-		i=$(( $i + 2 ))
-		#要素数最大
-		if [ $i -eq ${#AGG_COLUM[@]} ]
-		then
-			break
-		fi
-	done
-}
-#innerjoinをつくる
+#joinをつくる
 SQL_2(){
 	local e
 	local i=0
@@ -403,9 +253,9 @@ SQL_2(){
 	do
 		if [ $i -eq 0 ]
 		then
-			JOIN="INNER JOIN ${TABLE[j]} ON ${JOIN_COLUM[i]} = ${JOIN_COLUM[i+1]}"
+			JOIN="$JOIN_SELECT ${TABLE[j]} ON ${JOIN_COLUM[i]} = ${JOIN_COLUM[i+1]}"
 		else
-			JOIN="$JOIN\nINNER JOIN ${TABLE[j]} ON ${JOIN_COLUM[i]} = ${JOIN_COLUM[i+1]}"
+			JOIN="$JOIN\n$JOIN_SELECT ${TABLE[j]} ON ${JOIN_COLUM[i]} = ${JOIN_COLUM[i+1]}"
 		fi
 		i=$(( $i + 2 ))
 		let j++
@@ -435,18 +285,31 @@ SQL_3(){
 		fi
 	done
 }
+#JOIN選ぶ
+Join(){
+	local select
+	echo -e "\n結合の種類を選んでください"
+	echo "内部結合 : 1"
+	echo "左外部結合 : 2"
+	read -p "結合の種類：" select </dev/tty
+	case "$select" in
+		"1" ) JOIN_SELECT="INNER JOIN";;
+		"2" ) JOIN_SELECT="LEFT OUTER JOIN";;
+		* ) echo -e "存在しない選択です。\n最初からやり直してください。"
+			exit 0;;
+	esac
+	echo
+}
 
-echo "SQLファイルを新規作成(INNERJOIN)"
+echo "SQLファイルを新規作成(結合文)"
 read -p "ファイル名を入力 : " SQLFILE </dev/tty
 File $SQLFILE
+Join
 Account
 Connect
 Show_DB
 read -p "データベース名を入力：" Show_DB </dev/tty
-Fact_JOIN $Show_DB
-Dimantion_JOIN $Show_DB
-FACT_COLUM $Show_DB
-DIMANTION_COLUM $Show_DB
+JOIN_table $Show_DB
 Create_sql $Show_DB
 echo "--------------------"
 echo "ファイル名：$SQLFILE"
