@@ -154,16 +154,6 @@ Show_array(){
 		echo "*** ${e}"
 	done
 }
-#配列の中身を横に表示
-Show_array2(){	
-	local e
-	local data
-	for e in "${ARRAY2[@]}"
-	do
-		data="$data ${e}"
-	done
-	echo $data
-}
 #ファクトテーブル結合関数(引数:DB名)
 Fact_JOIN(){
 	local table
