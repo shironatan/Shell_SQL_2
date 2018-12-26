@@ -1,4 +1,5 @@
 # Shell_SQL_2
+コードの簡単な説明や実行結果：http://467.hatenablog.com/entry/2018/12/21/202956
 1.Delete.sh
 DELETE文をつくることができます。
 2.Ineer_join.sh
